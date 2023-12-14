@@ -93,10 +93,12 @@ fun solvePart2(lines: List<String>): Int {
 }
 
 fun main() {
-  print("Test Data (1), Real Data (2): ")
-  val choice = readln()
-  val path = if (choice == "1") Path.of("./input/03/test_input.txt") else Path.of("./input/03/input.txt")
+  val testData = Files.readAllLines(Path.of("./input/03/input.test.txt"))
+  val data = Files.readAllLines(Path.of("./input/03/input.txt"))
 
-  println("Part1: ${solvePart1(Files.readAllLines(path))}")
-  println("Part2: ${solvePart2(Files.readAllLines(path))}")
+  println("Part1 [TEST] : ${solvePart1(testData)}")
+  println("Part1        : ${solvePart1(data)}")
+
+  println("Part2 [TEST] : ${solvePart2(testData)}")
+  println("Part2        : ${solvePart2(data)}")
 }
