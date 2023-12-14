@@ -89,6 +89,12 @@ fun solvePart1(lines: List<String>): Int {
 }
 
 fun solvePart2(lines: List<String>): Int {
+  val matrix: Array<Array<Char>> = Array(lines.size) { i -> Array(lines[i].length) { j -> lines[i][j] } }
+  matrix.forEachIndexed { i, line ->
+    line.forEachIndexed { j, char ->
+      // TODO
+    }
+  }
   return 0
 }
 
