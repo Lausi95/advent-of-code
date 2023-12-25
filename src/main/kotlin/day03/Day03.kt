@@ -6,14 +6,20 @@ import java.util.stream.IntStream
 
 data class Digit(val i: Int, val j: Int, val digit: Char)
 
+typealias Digits = Set<Digit>
+
+typealias Matrix = Array<Array<Char>>
+
 fun Char.isSymbol(): Boolean = !isDigit() && this != '.'
 
-fun <T> Array<Array<T>>.isInBound(i: Int, j: Int) = i >= 0 && i < this.size && j >= 0 && j < this[i].size
+fun Char.isGear(): Boolean = this == '*'
 
-fun <T, U> Array<Array<T>>.ifInBound(i: Int, j: Int, default: U, consumer: (value: T) -> U): U =
+fun Matrix.isInBound(i: Int, j: Int) = i >= 0 && i < this.size && j >= 0 && j < this[i].size
+
+fun <U> Matrix.ifInBound(i: Int, j: Int, default: U, consumer: (value: Char) -> U): U =
   if (this.isInBound(i, j)) consumer(this[i][j]) else default
 
-fun Array<Array<Char>>.isSymbol(i: Int, j: Int) = ifInBound(i, j, false) { it.isSymbol() }
+fun Matrix.isSymbol(i: Int, j: Int) = ifInBound(i, j, false) { it.isSymbol() }
 
 val CHECK_SYMBOL_OFFSETS = listOf(
   Pair(+1,  0),
@@ -26,22 +32,48 @@ val CHECK_SYMBOL_OFFSETS = listOf(
   Pair(-1, -1),
 )
 
-fun Array<Array<Char>>.isSymbolAround(i: Int, j: Int): Boolean {
+fun Digits.toInt(): Int {
+  return this.sortedBy { it.j }
+    .map { it.digit }
+    .joinToString("")
+    .toInt()
+}
+
+fun Digits.group(): Set<Digits> {
+  val sets = mutableSetOf<MutableSet<Digit>>()
+  forEach { digit ->
+    val set = sets.find { it.any { d -> d.j + 1 == digit.j || d.j - 1 == digit.j }}
+    if (set == null) {
+      sets.add(mutableSetOf(digit))
+    } else {
+      set.add(digit)
+    }
+  }
+  return sets
+}
+
+fun Matrix.around(i: Int, j: Int): List<Pair<Int, Int>> {
+  return CHECK_SYMBOL_OFFSETS
+    .map { (di, dj) -> Pair(i + di, j + dj) }
+    .filter { (ii, jj) -> isInBound(ii, jj) }
+}
+
+fun Matrix.isSymbolAround(i: Int, j: Int): Boolean {
   return CHECK_SYMBOL_OFFSETS.any { (di, dj) -> isSymbol(i + di, j + dj) }
 }
 
-fun Array<Array<Char>>.ifSymbolAround(i: Int, j: Int, onSymbolAround: () -> Unit) {
+fun Matrix.ifSymbolAround(i: Int, j: Int, onSymbolAround: () -> Unit) {
   if (isSymbolAround(i, j)) {
     onSymbolAround()
   }
 }
 
-fun Array<Array<Char>>.expandDigits(i: Int, j: Int): List<Digit> {
+fun Matrix.expandDigits(i: Int, j: Int): Set<Digit> {
   if (!this[i][j].isDigit()) {
-    return emptyList()
+    return emptySet()
   }
 
-  val result = mutableListOf<Digit>()
+  val result = mutableSetOf<Digit>()
 
   result.addAll(collectAdjacentDigits(i, j) { it + 1 })
   result.addAll(collectAdjacentDigits(i, j) { it - 1 })
@@ -50,12 +82,24 @@ fun Array<Array<Char>>.expandDigits(i: Int, j: Int): List<Digit> {
   return result
 }
 
-fun Array<Array<Char>>.collectAdjacentDigits(i: Int, j: Int, nextInt: (Int) -> Int): List<Digit> {
+fun Matrix.collectAdjacentDigits(i: Int, j: Int, nextInt: (Int) -> Int): List<Digit> {
   return IntStream.iterate(nextInt(j), nextInt)
     .takeWhile { isInBound(i, it) }
     .filter { this[i][it].isDigit() }
     .mapToObj { Digit(i, it, this[i][it]) }
     .toList()
+}
+
+fun List<String>.toMatrix(): Array<Array<Char>> = Array(this.size) { i -> Array(this[i].length) { j -> this[i][j] } }
+
+fun <T> Matrix.iterate(step: (i: Int, j: Int, c: Char) -> T) : List<T> {
+  val lst = mutableListOf<T>()
+  this.forEachIndexed { i, line ->
+    line.forEachIndexed { j, char ->
+      lst.add(step(i, j, char))
+    }
+  }
+  return lst
 }
 
 fun solvePart1(lines: List<String>): Int {
@@ -88,14 +132,31 @@ fun solvePart1(lines: List<String>): Int {
   return numbers.sumOf { it.toInt() }
 }
 
+data class Vec(val i: Int, val j: Int, val value: Char)
+
+
+
 fun solvePart2(lines: List<String>): Int {
-  val matrix: Array<Array<Char>> = Array(lines.size) { i -> Array(lines[i].length) { j -> lines[i][j] } }
-  matrix.forEachIndexed { i, line ->
-    line.forEachIndexed { j, char ->
-      // TODO
+  val matrix = lines.toMatrix()
+  return matrix.iterate { i, j, c ->
+    if (!c.isGear()) {
+      return@iterate emptyList()
     }
-  }
-  return 0
+
+    val numbersAroundGear = matrix.around(i, j)
+      .filter { (ii, jj) -> matrix[ii][jj].isDigit() }
+      .flatMap { (ii, jj) -> matrix.expandDigits(ii, jj) }
+      .distinct()
+      .toSet()
+      .group()
+      .map { it.toInt() }
+
+    if (numbersAroundGear.size != 2) {
+      return@iterate emptyList()
+    }
+
+    return@iterate listOf(Pair(numbersAroundGear[0], numbersAroundGear[1]))
+  }.flatten().sumOf { (a, b) -> a * b }
 }
 
 fun main() {
