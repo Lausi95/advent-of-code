@@ -37,7 +37,7 @@ fun solvePart2(input: List<String>): Int {
   val cards = input.map(Card::parse)
   for (card in cards) {
     for (x in 1..card.matches()) {
-      cards.find { c -> c.cardNumber == card.cardNumber + x }?.let {
+      cards.find { it.cardNumber == card.cardNumber + x }?.let {
         it.instances += 1 * card.instances
       }
     }
