@@ -3,7 +3,7 @@ package day03
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class Day03Test {
+class Day04Test {
 
   @Test
   fun testSingleLine_NoNumbers() {
