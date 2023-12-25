@@ -6,7 +6,7 @@ import java.util.stream.IntStream
 
 data class Digit(val i: Int, val j: Int, val digit: Char)
 
-typealias Digits = Set<Digit>
+typealias Digits = List<Digit>
 
 typealias Matrix = Array<Array<Char>>
 
@@ -39,12 +39,12 @@ fun Digits.toInt(): Int {
     .toInt()
 }
 
-fun Digits.group(): Set<Digits> {
-  val sets = mutableSetOf<MutableSet<Digit>>()
-  forEach { digit ->
-    val set = sets.find { it.any { d -> d.j + 1 == digit.j || d.j - 1 == digit.j }}
+fun Digits.groupAdjacentDigits(): List<Digits> {
+  val sets = mutableListOf<MutableList<Digit>>()
+  sortedBy { it.j }.forEach { digit ->
+    val set = sets.find { it.any { d -> d.i == digit.i && (d.j + 1 == digit.j || d.j - 1 == digit.j) }}
     if (set == null) {
-      sets.add(mutableSetOf(digit))
+      sets.add(mutableListOf(digit))
     } else {
       set.add(digit)
     }
@@ -52,10 +52,11 @@ fun Digits.group(): Set<Digits> {
   return sets
 }
 
-fun Matrix.around(i: Int, j: Int): List<Pair<Int, Int>> {
+fun Matrix.around(i: Int, j: Int): List<Vec> {
   return CHECK_SYMBOL_OFFSETS
     .map { (di, dj) -> Pair(i + di, j + dj) }
     .filter { (ii, jj) -> isInBound(ii, jj) }
+    .map { (ii, jj) -> Vec(ii, jj, this[ii][jj]) }
 }
 
 fun Matrix.isSymbolAround(i: Int, j: Int): Boolean {
@@ -84,7 +85,7 @@ fun Matrix.expandDigits(i: Int, j: Int): Set<Digit> {
 
 fun Matrix.collectAdjacentDigits(i: Int, j: Int, nextInt: (Int) -> Int): List<Digit> {
   return IntStream.iterate(nextInt(j), nextInt)
-    .takeWhile { isInBound(i, it) }
+    .takeWhile { isInBound(i, it) && this[i][it].isDigit() }
     .filter { this[i][it].isDigit() }
     .mapToObj { Digit(i, it, this[i][it]) }
     .toList()
@@ -132,31 +133,26 @@ fun solvePart1(lines: List<String>): Int {
   return numbers.sumOf { it.toInt() }
 }
 
-data class Vec(val i: Int, val j: Int, val value: Char)
+data class Vec(val i: Int, val j: Int, val value: Char) {
+  fun isGear() = value.isGear()
+  fun isDigit() = value.isDigit()
+}
 
-
+fun Matrix.toVecs(): List<Vec> {
+  return this.flatMapIndexed { i, row -> row.mapIndexed { j, c -> Vec(i, j, c) }}
+}
 
 fun solvePart2(lines: List<String>): Int {
   val matrix = lines.toMatrix()
-  return matrix.iterate { i, j, c ->
-    if (!c.isGear()) {
-      return@iterate emptyList()
-    }
-
-    val numbersAroundGear = matrix.around(i, j)
-      .filter { (ii, jj) -> matrix[ii][jj].isDigit() }
-      .flatMap { (ii, jj) -> matrix.expandDigits(ii, jj) }
-      .distinct()
-      .toSet()
-      .group()
-      .map { it.toInt() }
-
-    if (numbersAroundGear.size != 2) {
-      return@iterate emptyList()
-    }
-
-    return@iterate listOf(Pair(numbersAroundGear[0], numbersAroundGear[1]))
-  }.flatten().sumOf { (a, b) -> a * b }
+  return matrix.toVecs().asSequence()
+    .filter { it.isGear() }
+    .map { matrix.around(it.i, it.j) }
+    .map { it.filter { v -> v.isDigit() } }
+    .map { it.flatMap { d -> matrix.expandDigits(d.i, d.j) }.distinct() }
+    .map { it.groupAdjacentDigits() }
+    .filter { it.size == 2 }
+    .map { it.map { g -> g.toInt() } }
+    .sumOf { it[0] * it[1] }
 }
 
 fun main() {
