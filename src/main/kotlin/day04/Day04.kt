@@ -12,8 +12,8 @@ fun solvePart2(input: List<String>): Int {
   return 0
 }
 
-fun measure(name: String, fn: () -> Int) {
-  var solution: Int
+fun <T> measure(name: String, fn: () -> T) {
+  var solution: T
   val time = measureTimeMillis {
     solution = fn()
   }
