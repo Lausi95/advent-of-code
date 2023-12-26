@@ -1,5 +1,6 @@
 package day04
 
+import measure
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.pow
@@ -37,21 +38,12 @@ fun solvePart2(input: List<String>): Int {
   val cards = input.map(Card::parse)
   for (card in cards) {
     for (x in 1..card.matches()) {
-      cards.find { it.cardNumber == card.cardNumber + x }?.let {
+      cards.find { it.cardNumber == card.cardNumber + x }?.also {
         it.instances += 1 * card.instances
       }
     }
   }
   return cards.sumOf { it.instances }
-}
-
-fun <T> measure(name: String, fn: () -> T): T {
-  var solution: T
-  val time = measureTimeMillis {
-    solution = fn()
-  }
-  println("$name took ${time}ms: $solution")
-  return solution
 }
 
 fun main() {
