@@ -33,3 +33,12 @@ fun getAllNumbers(line: String): List<Long> {
   }
   return numbers
 }
+
+fun <T1, T2> solve(day: String, part1: (List<String>) -> T1, part2: (List<String>) -> T2) {
+  val inputs = Inputs.load(day)
+
+  measure("Part 1, Test") { part1(inputs.testInput) }
+  measure("Part 1      ") { part1(inputs.actualInput) }
+  measure("Part 2, Test") { part2(inputs.testInput) }
+  measure("Part 2      ") { part2(inputs.actualInput) }
+}
