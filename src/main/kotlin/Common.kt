@@ -23,7 +23,7 @@ fun <T> measure(name: String, fn: () -> T): T {
   return solution
 }
 
-val numberPattern: Pattern = Pattern.compile("\\d+")
+val numberPattern: Pattern = Pattern.compile("-?\\d+")
 
 fun getAllNumbers(line: String): List<Long> {
   val numbers = mutableListOf<Long>()
