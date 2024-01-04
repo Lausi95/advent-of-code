@@ -4,7 +4,6 @@ import measure
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.pow
-import kotlin.system.measureTimeMillis
 
 data class Card(val cardNumber: Int, val winningNumbers: List<Int>, val numbers: List<Int>, var instances: Int = 1) {
   companion object {

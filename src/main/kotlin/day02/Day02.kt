@@ -2,38 +2,37 @@ package day02
 
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Collections.max
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-data class Game(val gameNumber: Int, val rounds: List<Round>)
+data class Game(val gameNumber: Int, val rounds: List<Round>) {
+
+  fun maxReds(): Int? = rounds.maxOfOrNull { it.reds }
+
+  fun maxGreens(): Int? = rounds.maxOfOrNull { it.greens }
+
+  fun maxBlues(): Int? = rounds.maxOfOrNull { it.blues }
+}
 
 data class Round(val blues: Int, val reds: Int, val greens: Int)
 
 val INPUT_FILE: Path = Path.of("./input/02/input.txt")
 
-val GAME_NUMBER_PATTERN: Pattern = Pattern.compile("Game (?<gameNumber>\\d+)")
-val REDS_PATTERN: Pattern = Pattern.compile("(?<amount>\\d+) red")
-val GREEN_PATTERN: Pattern = Pattern.compile("(?<amount>\\d+) green")
-val BLUE_PATTERN: Pattern = Pattern.compile("(?<amount>\\d+) blue")
+val GAME_NUMBER_REGEX: Regex = "Game \\d+".toRegex()
+val REDS_REGEX = "(\\d+) red".toRegex()
+val BLUES_REGEX = "(\\d+) blue".toRegex()
+val GREENS_REGEX = "(\\d+) green".toRegex()
 
-fun <T> ifMatch(matcher: Matcher, default: T, onMatch: (Matcher) -> T): T {
-  return if (matcher.find())
-    onMatch(matcher)
-  else
-    default
-}
+fun parseInt(input: String, pattern: Regex, default: Int = 0): Int =
+  pattern.matchEntire(input)?.groupValues?.get(1)?.toInt() ?: default
 
-fun parseInt(input: String, pattern: Pattern, groupName: String, default: Int = 0): Int =
-  ifMatch(pattern.matcher(input), default) { it.group(groupName).toInt() }
+fun parseGameNumber(gameDefinition: String): Int = parseInt(gameDefinition, GAME_NUMBER_REGEX)
 
-fun parseGameNumber(gameDefinition: String): Int = parseInt(gameDefinition, GAME_NUMBER_PATTERN, "gameNumber")
+fun parseReds(round: String): Int = parseInt(round, REDS_REGEX)
 
-fun parseReds(round: String): Int = parseInt(round, REDS_PATTERN, "amount")
+fun parseGreens(round: String): Int = parseInt(round, GREENS_REGEX)
 
-fun parseGreens(round: String): Int = parseInt(round, GREEN_PATTERN, "amount")
-
-fun parseBlues(round: String): Int = parseInt(round, BLUE_PATTERN, "amount")
+fun parseBlues(round: String): Int = parseInt(round, BLUES_REGEX)
 
 fun parseRound(round: String): Round =
   Round(parseBlues(round), parseReds(round), parseGreens(round))
@@ -65,10 +64,14 @@ fun solvePart1(lines: List<String>): Int = lines
   .sumOf { it.gameNumber }
 
 fun solvePart2(lines: List<String>): Int = lines
+  .asSequence()
   .mapNotNull { parseGame(it) }
-  .sumOf { game -> max(game.rounds.map { it.blues }) * max(game.rounds.map { it.reds }) * max(game.rounds.map { it.greens }) }
+  .map { listOfNotNull(it.maxReds(), it.maxGreens(), it.maxBlues()) }
+  .mapNotNull { it.reduceOrNull { acc, i -> acc * i } }
+  .sum()
 
 fun main() {
   println("Part1: ${solvePart1(Files.readAllLines(INPUT_FILE))}")
+  println("Part2: ${solvePart2(Files.readAllLines(INPUT_FILE))}")
   println("Part2: ${solvePart2(Files.readAllLines(INPUT_FILE))}")
 }
