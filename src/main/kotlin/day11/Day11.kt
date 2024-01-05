@@ -3,12 +3,12 @@ package day11
 import solve
 import kotlin.math.abs
 
-data class Galaxy(var x: Long, var y: Long) {
+private data class Galaxy(var x: Long, var y: Long) {
   fun distance(galaxy2: Galaxy): Long =
     abs(x - galaxy2.x) + abs(y - galaxy2.y)
 }
 
-typealias Galaxies = List<Galaxy>
+private typealias Galaxies = List<Galaxy>
 
 private fun parseGalaxies(input: List<String>): Galaxies {
   val galaxies = mutableListOf<Galaxy>()
@@ -22,7 +22,7 @@ private fun parseGalaxies(input: List<String>): Galaxies {
   return galaxies
 }
 
-private fun Galaxies.expandSpace(d: Long = 1) {
+private fun Galaxies.expandSpace(d: Long = 1): Galaxies {
   for (x in (0..<maxOf { it.x }).reversed()) {
     if (none { it.x == x }) {
       filter { it.x > x }.forEach { it.x += d }
@@ -34,6 +34,8 @@ private fun Galaxies.expandSpace(d: Long = 1) {
       filter { it.y > y }.forEach { it.y += d }
     }
   }
+
+  return this
 }
 
 private fun Galaxies.sumDistances(): Long {
@@ -45,16 +47,12 @@ private fun Galaxies.sumDistances(): Long {
   }.sum()
 }
 
-private fun solvePart1(input: List<String>): Long {
-  val galaxies = parseGalaxies(input)
-  galaxies.expandSpace()
-  return galaxies.sumDistances()
-}
+private fun solvePart1(input: List<String>) = parseGalaxies(input)
+  .expandSpace()
+  .sumDistances()
 
-private fun solvePart2(input: List<String>): Long {
-  val galaxies = parseGalaxies(input)
-  galaxies.expandSpace(1_000_000L - 1)
-  return galaxies.sumDistances()
-}
+private fun solvePart2(input: List<String>) = parseGalaxies(input)
+  .expandSpace(1_000_000 - 1)
+  .sumDistances()
 
 private fun main() = solve("11", ::solvePart1, ::solvePart2)
