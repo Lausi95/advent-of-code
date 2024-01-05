@@ -1,10 +1,10 @@
 package day09
 
-import getAllNumbers
+import getAllLongs
 import solve
 
 fun solvePart1(input: List<String>): Long {
-  return input.map { getAllNumbers(it) }.sumOf { extrapolateToFuture(it) }
+  return input.map { getAllLongs(it) }.sumOf { extrapolateToFuture(it) }
 }
 
 fun extrapolateToFuture(sequence: List<Long>): Long {
@@ -13,7 +13,7 @@ fun extrapolateToFuture(sequence: List<Long>): Long {
 }
 
 fun solvePart2(input: List<String>): Long {
-  return input.map { getAllNumbers(it) }.sumOf { extrapolateToPast(it) }
+  return input.map { getAllLongs(it) }.sumOf { extrapolateToPast(it) }
 }
 
 fun extrapolateToPast(sequence: List<Long>): Long {

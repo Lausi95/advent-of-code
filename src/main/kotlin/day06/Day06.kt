@@ -1,12 +1,12 @@
 package day06
 
 import Inputs
-import getAllNumbers
+import getAllLongs
 import measure
 
 fun solvePart1(input: List<String>): Long {
-  val times = getAllNumbers(input[0])
-  val distances = getAllNumbers(input[1])
+  val times = getAllLongs(input[0])
+  val distances = getAllLongs(input[1])
   var result = 1L
 
   for (i in times.indices) {
@@ -20,8 +20,8 @@ fun solvePart1(input: List<String>): Long {
 }
 
 fun solvePart2(input: List<String>): Int {
-  val time = getAllNumbers(input[0]).joinToString("") { it.toString() }.toLong()
-  val distance = getAllNumbers(input[1]).joinToString("") { it.toString() }.toLong()
+  val time = getAllLongs(input[0]).joinToString("") { it.toString() }.toLong()
+  val distance = getAllLongs(input[1]).joinToString("") { it.toString() }.toLong()
   return waysToWin(time, distance)
 }
 

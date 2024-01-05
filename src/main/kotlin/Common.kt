@@ -25,11 +25,20 @@ fun <T> measure(name: String, fn: () -> T): T {
 
 val numberPattern: Pattern = Pattern.compile("-?\\d+")
 
-fun getAllNumbers(line: String): List<Long> {
+fun getAllLongs(line: String): List<Long> {
   val numbers = mutableListOf<Long>()
   val numberMatcher = numberPattern.matcher(line)
   while (numberMatcher.find()) {
     numbers.add(numberMatcher.group().toLong())
+  }
+  return numbers
+}
+
+fun getAllInts(line: String): List<Int> {
+  val numbers = mutableListOf<Int>()
+  val numberMatcher = numberPattern.matcher(line)
+  while (numberMatcher.find()) {
+    numbers.add(numberMatcher.group().toInt())
   }
   return numbers
 }
